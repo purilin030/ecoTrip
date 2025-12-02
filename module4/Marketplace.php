@@ -83,7 +83,7 @@ include '../header.php';
             ?>
 
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col group hover:shadow-md transition duration-300">
-                <div class="h-48 overflow-hidden bg-gray-100 relative">
+                <div class="h-48 overflow-hidden bg-gradient-to-r from-green-500 to-teal-600 text-white relative">
                     <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=500&q=80" 
                          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                     

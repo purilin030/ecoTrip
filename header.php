@@ -15,7 +15,7 @@ if (!in_array($current_page, $public_pages)) {
     }
 }
 
-// 3. 全局头像与角色逻辑
+// 3. Global avatar logic
 $display_avatar = "https://ui-avatars.com/api/?name=Guest&background=f3f4f6&color=6b7280";
 $user_name_display = "Guest";
 $user_role_display = "Visitor";
@@ -72,6 +72,7 @@ if (isset($_SESSION['Firstname'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo isset($page_title) ? $page_title : 'ecoTrip'; ?></title>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
