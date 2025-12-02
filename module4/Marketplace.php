@@ -52,10 +52,31 @@ include '../header.php';
             <div class="p-2 bg-white rounded-full mr-3 text-brand-600">
                 <i class="fa-solid fa-wallet"></i>
             </div>
-            <div class="flex flex-col">
-                <span class="text-xs text-brand-700 font-medium uppercase tracking-wider">Your Balance</span>
-                <span class="text-xl"><?php echo number_format($currentUser['RedeemPoint']); ?> pts</span>
+            
+           <a href="Redeem-Record.php" class="group block transform transition-all hover:-translate-y-1">
+    
+    <div class="relative overflow-hidden bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-4 rounded-2xl shadow-lg flex items-center justify-between">
+        
+        <div class="flex items-center">
+            <div class="p-3 bg-white/20 backdrop-blur-sm rounded-full mr-4 group-hover:bg-white/30 transition-colors">
+                <i class="fa-solid fa-wallet text-xl"></i>
             </div>
+            <div class="flex flex-col">
+                <span class="text-emerald-100 text-xs font-bold uppercase tracking-wider">Your Balance</span>
+                <span class="text-2xl font-bold font-mono"><?php echo number_format($currentUser['RedeemPoint']); ?> pts</span>
+            </div>
+        </div>
+
+        <div class="text-white/50 group-hover:text-white group-hover:translate-x-1 transition-all duration-300">
+            <div class="flex flex-col items-end">
+                <span class="text-[10px] uppercase font-bold opacity-0 group-hover:opacity-100 transition-opacity mb-1">History</span>
+                <i class="fa-solid fa-chevron-right text-xl"></i>
+            </div>
+        </div>
+
+        <div class="absolute -top-6 -right-6 w-20 h-20 bg-white opacity-10 rounded-full blur-xl group-hover:opacity-20 transition-opacity"></div>
+    </div>
+</a>
         </div>
     </div>
 
