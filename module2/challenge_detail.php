@@ -137,9 +137,10 @@ $main_image = !empty($challenge['photo_upload']) ? "uploads/" . $challenge['phot
                     </div>
 
                     <div class="action-area">
-                        <button class="join-btn" onclick="joinChallenge(<?php echo $current_id; ?>)">
+                        <a href="/ecotrip/module3/submit_proof.php?challenge_id=<?php echo $current_id; ?>" class="join-btn"
+                            style="text-decoration: none; display: inline-block; text-align: center;">
                             Join Challenge Now
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>

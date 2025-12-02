@@ -20,8 +20,18 @@ if (!isset($_SESSION['user_id'])) {
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="style.css"> #
+<link rel="stylesheet" href="style.css"> 
 
+<script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { brand: { 50: '#f0fdf4', 100: '#dcfce7', 500: '#22c55e', 600: '#16a34a', 700: '#15803d', 900: '#14532d' } }
+                }
+            }
+        }
+    </script>
 
 <div class="min-h-[80vh] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
     <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
@@ -44,13 +54,8 @@ if (!isset($_SESSION['user_id'])) {
                     <i class="fa-solid fa-list-check mr-2"></i> Track My Status
                 </a>
 
-                <a href="submit_proof.php"
-                    class="w-full flex justify-center items-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition">
-                    <i class="fa-solid fa-plus mr-2"></i> Submit Another Proof
-                </a>
-
                 <div class="pt-2">
-                    <a href="../index.php" class="text-sm font-medium text-gray-400 hover:text-gray-600 transition">
+                    <a href="/ecotrip/module1/home.php" class="text-sm font-medium text-gray-400 hover:text-gray-600 transition">
                         Back to Home
                     </a>
                 </div>
