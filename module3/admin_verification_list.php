@@ -1,27 +1,27 @@
 <?php
-// === 1. 配置与连接 ===
+// ==========================================
+// 1. 配置与连接
+// ==========================================
 $path_to_db = __DIR__ . '/../database.php';
 $path_to_header = __DIR__ . '/../header.php';
 
-// 检查数据库文件
 if (!file_exists($path_to_db)) {
-    die("Error: Cannot find database.php at " . $path_to_db);
-}
-require_once $path_to_db;
-
-// 确保数据库连接变量存在
-if (!isset($con)) {
-    if (isset($conn)) {
-        $con = $conn;
+    if (file_exists('database.php')) {
+        require_once 'database.php';
     } else {
-        die("Error: Database connection variable \$con is not set. Please check database.php.");
+        die("Error: Cannot find database.php");
     }
+} else {
+    require_once $path_to_db;
 }
 
-if (session_status() === PHP_SESSION_NONE)
-    session_start();
+if (!isset($con)) {
+    if (isset($conn)) { $con = $conn; } 
+    else { die("Error: Database connection variable \$con is not set."); }
+}
 
-// 引入 Header
+if (session_status() === PHP_SESSION_NONE) session_start();
+
 if (file_exists($path_to_header)) {
     $page_title = "Verification Queue";
     include $path_to_header;
@@ -29,10 +29,7 @@ if (file_exists($path_to_header)) {
     echo '<!DOCTYPE html><html lang="en"><head><script src="https://cdn.tailwindcss.com"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"></head><body class="bg-gray-50">';
 }
 
-// === 2. 权限检查 ===
-// if (!isset($_SESSION['Role']) || $_SESSION['Role'] != 'Admin') { ... }
-
-// === 3. 处理筛选逻辑 ===
+// === 2. 筛选逻辑 ===
 $filter_status = isset($_GET['status']) ? $_GET['status'] : 'All';
 
 // 构建 SQL 查询
@@ -56,9 +53,7 @@ if ($filter_status != 'All') {
 $sql .= " ORDER BY s.Submission_date DESC, s.Submission_ID DESC";
 
 $stmt = $con->prepare($sql);
-if (!$stmt) {
-    die("SQL Prepare Error: " . $con->error);
-}
+if (!$stmt) { die("SQL Prepare Error: " . $con->error); }
 
 if ($filter_status != 'All') {
     $stmt->bind_param("s", $filter_status);
@@ -67,22 +62,18 @@ if ($filter_status != 'All') {
 $stmt->execute();
 $result = $stmt->get_result();
 
-// === 4. 统计各状态数量 ===
+// === 3. 统计各状态数量 ===
 $count_sql = "SELECT 
     COUNT(*) as total,
     SUM(CASE WHEN Status = 'Pending' THEN 1 ELSE 0 END) as pending,
     SUM(CASE WHEN Status = 'Approved' THEN 1 ELSE 0 END) as approved,
-    SUM(CASE WHEN Status = 'Denied' THEN 1 ELSE 0 END) as denied
+    SUM(CASE WHEN Status = 'Denied' OR Status = 'Rejected' THEN 1 ELSE 0 END) as denied
 FROM submissions";
 
 $stats_result = $con->query($count_sql);
+$stats = $stats_result ? $stats_result->fetch_assoc() : ['total' => 0, 'pending' => 0, 'approved' => 0, 'denied' => 0];
 
-if ($stats_result) {
-    $stats = $stats_result->fetch_assoc();
-} else {
-    $stats = ['total' => 0, 'pending' => 0, 'approved' => 0, 'denied' => 0];
-}
-
+// 确保默认值不为null
 $stats['pending'] = $stats['pending'] ?? 0;
 $stats['approved'] = $stats['approved'] ?? 0;
 $stats['denied'] = $stats['denied'] ?? 0;
@@ -99,15 +90,17 @@ $stats['denied'] = $stats['denied'] ?? 0;
         </div>
 
         <div class="mt-4 flex md:mt-0 md:ml-4 space-x-3">
-            <div
-                class="flex flex-col items-center justify-center bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
+            <div class="flex flex-col items-center justify-center bg-white px-5 py-2 rounded-lg shadow-sm border border-gray-200">
                 <span class="text-2xl font-bold text-yellow-500"><?php echo $stats['pending']; ?></span>
                 <span class="text-xs text-gray-500 font-medium uppercase">Pending</span>
             </div>
-            <div
-                class="flex flex-col items-center justify-center bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
+            <div class="flex flex-col items-center justify-center bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
                 <span class="text-2xl font-bold text-green-500"><?php echo $stats['approved']; ?></span>
                 <span class="text-xs text-gray-500 font-medium uppercase">Approved</span>
+            </div>
+            <div class="flex flex-col items-center justify-center bg-white px-6 py-2 rounded-lg shadow-sm border border-gray-200">
+                <span class="text-2xl font-bold text-red-500"><?php echo $stats['denied']; ?></span>
+                <span class="text-xs text-gray-500 font-medium uppercase">Denied</span>
             </div>
         </div>
     </div>
@@ -119,8 +112,8 @@ $stats['denied'] = $stats['denied'] ?? 0;
                 $tabs = [
                     'All' => ['label' => 'All Submissions', 'count' => $stats['total']],
                     'Pending' => ['label' => 'Pending', 'count' => $stats['pending']],
-                    'Approved' => ['label' => 'Approved', 'count' => 0],
-                    'Denied' => ['label' => 'Denied', 'count' => 0],
+                    'Approved' => ['label' => 'Approved', 'count' => $stats['approved']],
+                    'Denied' => ['label' => 'Denied', 'count' => $stats['denied']],
                 ];
 
                 foreach ($tabs as $key => $val) {
@@ -128,9 +121,18 @@ $stats['denied'] = $stats['denied'] ?? 0;
                     $borderClass = $active ? 'border-brand-500 text-brand-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300';
                     $bgClass = $active ? 'bg-brand-50 text-brand-700' : 'bg-gray-100 text-gray-600';
 
+                    // 为 Denied 单独设置红色的 Badge 样式
+                    if ($key == 'Denied') {
+                        $bgClass = $active ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-500';
+                    }
+
                     echo '<a href="?status=' . $key . '" class="' . $borderClass . ' w-1/4 py-4 px-1 text-center border-b-2 font-medium text-sm flex justify-center items-center transition group">';
                     echo $val['label'];
-                    if ($val['count'] > 0 && $key != 'Approved' && $key != 'Denied') {
+                    
+                    // 【关键修改】始终显示 Denied 的数量 (即使是 0)，其他只有 >0 才显示
+                    // 或者统一都显示 >= 0，这里我按照你的习惯：Approved 和 Denied 如果是 0 也显示，方便看状态
+                    // 原代码是跳过 Approved/Denied 的显示。现在我让它们都显示出来。
+                    if ($val['count'] >= 0) {
                         echo '<span class="ml-2 py-0.5 px-2.5 rounded-full text-xs font-medium ' . $bgClass . '">' . $val['count'] . '</span>';
                     }
                     echo '</a>';
@@ -145,24 +147,12 @@ $stats['denied'] = $stats['denied'] ?? 0;
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID
-                        </th>
-                        <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User
-                        </th>
-                        <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Challenge</th>
-                        <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date
-                        </th>
-                        <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status</th>
-                        <th scope="col"
-                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Action</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Challenge</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -170,24 +160,14 @@ $stats['denied'] = $stats['denied'] ?? 0;
                         <?php while ($row = $result->fetch_assoc()): ?>
 
                             <?php
-                            // === 头像处理逻辑 ===
+                            // 头像处理
                             $fullName = $row['First_Name'] . ' ' . $row['Last_Name'];
-
-                            // 默认头像 (使用 ui-avatars)
                             $default_avatar = "https://ui-avatars.com/api/?name=" . urlencode($fullName) . "&background=random&color=fff&size=64";
-
-                            // 检查数据库中是否有头像
-                            // 假设 admin 目录在根目录之下 (例如 /admin/), 而图片存放在根目录的 /uploads/
-                            // 所以路径需要加前缀 "../"
-                            // 拼接物理路径进行检查
-                            $phys_path = $_SERVER['DOCUMENT_ROOT'] . $row['Avatar'];
-
-                            if (!empty($row['Avatar']) && file_exists($phys_path)) {
-                                // 数据库里已经是 /ecotrip/avatars/... 直接用，不要加 ../
-                                $display_avatar = $row['Avatar'];
-                            } else {
-                                $display_avatar = $default_avatar;
-                            }
+                            
+                            // 路径修正：如果数据库存的是相对路径，需要拼上 DOCUMENT_ROOT 检查是否存在
+                            // 假设头像存在 /ecotrip/avatars/
+                            // 这里做一个简单处理：如果有值就用，没值用默认
+                            $display_avatar = !empty($row['Avatar']) ? $row['Avatar'] : $default_avatar;
                             ?>
 
                             <tr class="hover:bg-gray-50 transition">
@@ -198,20 +178,16 @@ $stats['denied'] = $stats['denied'] ?? 0;
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <div class="flex-shrink-0 h-8 w-8 rounded-full overflow-hidden">
-                                            <img src="<?php echo $display_avatar; ?>" alt="User Avatar"
-                                                class="h-full w-full object-cover">
+                                            <img src="<?php echo htmlspecialchars($display_avatar); ?>" alt="User Avatar" class="h-full w-full object-cover">
                                         </div>
                                         <div class="ml-3">
-                                            <div class="text-sm font-medium text-gray-900">
-                                                <?php echo htmlspecialchars($fullName); ?>
-                                            </div>
+                                            <div class="text-sm font-medium text-gray-900"><?php echo htmlspecialchars($fullName); ?></div>
                                         </div>
                                     </div>
                                 </td>
 
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    <span class="block truncate max-w-[200px]"
-                                        title="<?php echo htmlspecialchars($row['Challenge_Title']); ?>">
+                                    <span class="block truncate max-w-[200px]" title="<?php echo htmlspecialchars($row['Challenge_Title']); ?>">
                                         <?php echo htmlspecialchars($row['Challenge_Title']); ?>
                                     </span>
                                 </td>
@@ -230,20 +206,15 @@ $stats['denied'] = $stats['denied'] ?? 0;
                                     $dotClass = 'text-gray-400';
 
                                     if ($st == 'pending') {
-                                        $badgeClass = 'bg-yellow-100 text-yellow-800';
-                                        $dotClass = 'text-yellow-400';
+                                        $badgeClass = 'bg-yellow-100 text-yellow-800'; $dotClass = 'text-yellow-400';
                                     } elseif ($st == 'approved') {
-                                        $badgeClass = 'bg-green-100 text-green-800';
-                                        $dotClass = 'text-green-400';
-                                    } elseif ($st == 'denied') {
-                                        $badgeClass = 'bg-red-100 text-red-800';
-                                        $dotClass = 'text-red-400';
+                                        $badgeClass = 'bg-green-100 text-green-800'; $dotClass = 'text-green-400';
+                                    } elseif ($st == 'denied' || $st == 'rejected') {
+                                        $badgeClass = 'bg-red-100 text-red-800'; $dotClass = 'text-red-400';
                                     }
                                     ?>
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?php echo $badgeClass; ?>">
-                                        <svg class="-ml-0.5 mr-1.5 h-2 w-2 <?php echo $dotClass; ?>" fill="currentColor"
-                                            viewBox="0 0 8 8">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?php echo $badgeClass; ?>">
+                                        <svg class="-ml-0.5 mr-1.5 h-2 w-2 <?php echo $dotClass; ?>" fill="currentColor" viewBox="0 0 8 8">
                                             <circle cx="4" cy="4" r="3" />
                                         </svg>
                                         <?php echo ucfirst($row['Status']); ?>
@@ -281,11 +252,8 @@ $stats['denied'] = $stats['denied'] ?? 0;
 </main>
 
 <?php
-if (isset($stmt))
-    $stmt->close();
-if (isset($con))
-    $con->close();
+if (isset($stmt)) $stmt->close();
+if (isset($con)) $con->close();
 ?>
 </body>
-
 </html>
