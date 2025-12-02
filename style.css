@@ -1,0 +1,40 @@
+/* 1. 顶部小链接 (Help, Become a member...) */
+.top-link {
+    font-size: 11px;
+    font-weight: 700; /* 粗体 */
+    text-transform: capitalize;
+    color: #333;
+    text-decoration: none;
+    letter-spacing: 0.5px;
+}
+.top-link:hover {
+    text-decoration: underline;
+}
+
+/* 2. 导航栏 Logo */
+.navbar-brand {
+    font-weight: 900; /* 极粗 */
+    letter-spacing: 1px;
+}
+
+/* 3. 中间的主菜单链接 (SHOES, MEN...) */
+.nav-custom-link {
+    font-size: 14px;
+    font-weight: 700; /* 粗体 */
+    text-transform: uppercase; /* 强制全大写 */
+    color: #000 !important;
+    letter-spacing: 1px;
+    padding-bottom: 2px;
+    border-bottom: 2px solid transparent; /* 为 Hover 效果做准备 */
+}
+
+/* 鼠标悬停时底部出现黑线 */
+.nav-custom-link:hover {
+    border-bottom: 2px solid #000;
+}
+
+/* 4. 搜索框样式 */
+.small-search {
+    background-color: #eceff1 !important; /* Adidas 风格的浅灰背景 */
+    height: 32
+}
