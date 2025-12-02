@@ -46,32 +46,6 @@ $city_result = $con->query($city_sql);
 </head>
 
 <body>
-    <header>
-        <div class="header-container">
-            <a href="#" class="logo">
-                <i class="fa-solid fa-leaf"></i>
-                <span>ecoTrip</span>
-            </a>
-
-            <nav class="nav-bar">
-                <a href="challenge.php" class="nav-link">Challenges</a>
-                <a href="#" class="nav-link">Leaderboard</a>
-                <a href="#" class="nav-link">Marketplace</a>
-                <a href="#" class="nav-link">My Team</a>
-                <a href="manage_challenge.php" class="nav-link active">Admin</a>
-            </nav>
-
-            <div class="user-section">
-                <div class="user-info">
-                    <span class="user-name">Systems Admin</span>
-                </div>
-                <div class="user-icon">
-                    <img src="https://ui-avatars.com/api/?name=Systems+Admin&background=0D8ABC&color=fff"
-                        alt="User Avatar">
-                </div>
-            </div>
-        </div>
-    </header>
 
     <div class="main-content">
         <div class="page-header">
