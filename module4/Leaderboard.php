@@ -24,9 +24,11 @@ if ($period === '7d') {
 if ($mode === 'individual') {
     if ($period === 'all') {
         // [个人 + 总榜]
+        // 🔥 修改点：添加 Avatar 字段
         $sql = "
             SELECT 
                 CONCAT(First_Name, ' ', Last_Name) AS Name,
+                Avatar, 
                 Point AS totalPoints,
                 NULL AS LastUpdate
             FROM user 
@@ -35,9 +37,11 @@ if ($mode === 'individual') {
         ";
     } else {
         // [个人 + 周/月榜]
+        // 🔥 修改点：添加 u.Avatar 字段
         $sql = "
             SELECT 
                 CONCAT(u.First_Name, ' ', u.Last_Name) AS Name,
+                u.Avatar,
                 COALESCE(SUM(p.Points_Earned), 0) AS totalPoints,
                 MAX(p.Earned_Date) AS LastUpdate
             FROM user u
@@ -53,16 +57,15 @@ if ($mode === 'individual') {
     // [团队榜]
     if ($period === 'all') {
         // [修改点]：All Time 模式下，直接累加 User 表中的 Point 字段
-        // Team Point = Sum of (User.Point)
         $sql = "
             SELECT 
                 t.Team_ID,
                 t.Team_name AS Name,
+                NULL as Avatar, -- 团队模式占位，保持字段一致性方便后续处理（虽然这里没用到）
                 COALESCE(SUM(u.Point), 0) AS totalPoints, 
                 MAX(p.Earned_Date) AS LastUpdate
             FROM team t
             LEFT JOIN user u ON t.Team_ID = u.Team_ID
-            -- 这里关联 pointsledger 仅为了获取'最后更新时间'，不影响分数计算
             LEFT JOIN pointsledger p ON u.User_ID = p.User_ID
             GROUP BY t.Team_ID, t.Team_name
             ORDER BY totalPoints DESC
@@ -74,6 +77,7 @@ if ($mode === 'individual') {
             SELECT 
                 t.Team_ID,
                 t.Team_name AS Name,
+                NULL as Avatar, -- 团队模式占位
                 COALESCE(SUM(p.Points_Earned), 0) AS totalPoints,
                 MAX(p.Earned_Date) AS LastUpdate
             FROM team t
@@ -150,7 +154,7 @@ $inactiveTab = "flex-1 py-4 text-center text-sm font-medium text-gray-500 hover:
             <?php else: ?>
                 
                 <?php foreach($rows as $row): 
-                    // 如果分数为0，跳过 (可选，如果你想显示0分的人就把这一行删掉)
+                    // 如果分数为0，跳过
                     if ($row['totalPoints'] == 0) continue; 
 
                     $rankDisplay = '';
@@ -163,6 +167,23 @@ $inactiveTab = "flex-1 py-4 text-center text-sm font-medium text-gray-500 hover:
                     } else {
                         $rankDisplay = '<span class="text-gray-400 font-medium">#' . $rank . '</span>';
                     }
+
+                    // === 🔥 头像处理逻辑 ===
+                    $display_avatar = '';
+                    $default_avatar = "https://ui-avatars.com/api/?name=" . urlencode($row['Name']) . "&background=random&color=fff&size=128";
+                    
+                    if ($mode === 'individual') {
+                        // 个人模式：检查数据库是否有头像
+                        if (!empty($row['Avatar'])) {
+                            // 注意：假设 Leaderboard.php 在子目录，图片在根目录，需要 "../"
+                            $display_avatar = "../" . $row['Avatar'];
+                        } else {
+                            $display_avatar = $default_avatar;
+                        }
+                    } else {
+                        // 团队模式：继续使用首字母头像
+                        $display_avatar = $default_avatar;
+                    }
                 ?>
                     <div class="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors">
                         <div class="col-span-2 flex items-center pl-1">
@@ -170,11 +191,10 @@ $inactiveTab = "flex-1 py-4 text-center text-sm font-medium text-gray-500 hover:
                         </div>
                         
                         <div class="col-span-6 flex items-center gap-3">
-                            <img src="https://ui-avatars.com/api/?name=<?= urlencode($row['Name']) ?>&background=random&size=128" class="w-8 h-8 rounded-full shadow-sm">
+                            <img src="<?= htmlspecialchars($display_avatar) ?>" class="w-8 h-8 rounded-full object-cover shadow-sm" alt="Avatar">
                             <span class="font-semibold text-gray-900 truncate">
                                 <?= htmlspecialchars($row['Name']) ?>
                             </span>
-                            
                         </div>
 
                         <div class="col-span-2 text-right font-bold text-brand-600">
