@@ -155,7 +155,7 @@ $inactiveTab = "flex-1 py-4 text-center text-sm font-medium text-gray-500 hover:
 
                     $rankDisplay = '';
                     if ($rank == 1) {
-                        $rankDisplay = '<i class="fa-solid fa-trophy text-yellow-400 text-lg"></i>';
+                        $rankDisplay = '<i class="fa-solid fa-trophy text-yellow-500 bg-yellow-50 text-lg"></i>';
                     } elseif ($rank == 2) {
                         $rankDisplay = '<i class="fa-solid fa-trophy text-gray-400 text-lg"></i>';
                     } elseif ($rank == 3) {
