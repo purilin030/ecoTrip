@@ -20,6 +20,7 @@ jobs:
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         server-dir: /htdocs/  # InfinityFree 强制要求网站文件必须放在 htdocs 文件夹下
+        local-dir: ./module1/
         exclude: | # 这里列出不想上传的文件
           **/.git*
           **/.github*
