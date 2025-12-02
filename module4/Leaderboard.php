@@ -3,7 +3,7 @@
 require '../database.php'; 
 
 // 2. 引入头部 (它包含了 session_start, html head, nav bar)
-include '../header.php'; // 你的文件在同级目录，不需要 ../
+include '../header.php'; 
 
 // --- 逻辑处理区域 ---
 
@@ -14,17 +14,16 @@ $period = $_GET['period'] ?? 'all';    // all, weekly, monthly
 // 定义日期筛选条件 (SQL片段)
 $dateCondition = "";
 if ($period === '7d') {
-    // 过去 7 天 (Rolling 7 Days)
+    // 过去 7 天
     $dateCondition = "AND p.Earned_Date >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
 } elseif ($period === '30d') {
-    // 过去 30 天 (Rolling 30 Days)
+    // 过去 30 天
     $dateCondition = "AND p.Earned_Date >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
 }
 // 构建 SQL 查询
 if ($mode === 'individual') {
     if ($period === 'all') {
         // [个人 + 总榜]
-        // 🔥 修改点：添加 Avatar 字段
         $sql = "
             SELECT 
                 CONCAT(First_Name, ' ', Last_Name) AS Name,
@@ -37,7 +36,6 @@ if ($mode === 'individual') {
         ";
     } else {
         // [个人 + 周/月榜]
-        // 🔥 修改点：添加 u.Avatar 字段
         $sql = "
             SELECT 
                 CONCAT(u.First_Name, ' ', u.Last_Name) AS Name,
@@ -56,12 +54,11 @@ if ($mode === 'individual') {
 } else {
     // [团队榜]
     if ($period === 'all') {
-        // [修改点]：All Time 模式下，直接累加 User 表中的 Point 字段
         $sql = "
             SELECT 
                 t.Team_ID,
                 t.Team_name AS Name,
-                NULL as Avatar, -- 团队模式占位，保持字段一致性方便后续处理（虽然这里没用到）
+                NULL as Avatar, 
                 COALESCE(SUM(u.Point), 0) AS totalPoints, 
                 MAX(p.Earned_Date) AS LastUpdate
             FROM team t
@@ -72,12 +69,11 @@ if ($mode === 'individual') {
             LIMIT 50
         ";
     } else {
-        // [保持不变]：时间段筛选 (7d/30d) 必须依然使用 pointsledger 计算增量
         $sql = "
             SELECT 
                 t.Team_ID,
                 t.Team_name AS Name,
-                NULL as Avatar, -- 团队模式占位
+                NULL as Avatar, 
                 COALESCE(SUM(p.Points_Earned), 0) AS totalPoints,
                 MAX(p.Earned_Date) AS LastUpdate
             FROM team t
@@ -168,20 +164,19 @@ $inactiveTab = "flex-1 py-4 text-center text-sm font-medium text-gray-500 hover:
                         $rankDisplay = '<span class="text-gray-400 font-medium">#' . $rank . '</span>';
                     }
 
-                    // === 🔥 头像处理逻辑 ===
+                    // === 🔥 头像处理逻辑修正 ===
                     $display_avatar = '';
                     $default_avatar = "https://ui-avatars.com/api/?name=" . urlencode($row['Name']) . "&background=random&color=fff&size=128";
                     
                     if ($mode === 'individual') {
-                        // 个人模式：检查数据库是否有头像
                         if (!empty($row['Avatar'])) {
-                            // 注意：假设 Leaderboard.php 在子目录，图片在根目录，需要 "../"
-                            $display_avatar = "../" . $row['Avatar'];
+                            // 使用 basename() 防止数据库里存了 "avatars/xxx.jpg" 导致路径重复
+                            // 最终结果强制为： /ecotrip/avatars/xxx.jpg
+                            $display_avatar = "/ecotrip/avatars/" . basename($row['Avatar']);
                         } else {
                             $display_avatar = $default_avatar;
                         }
                     } else {
-                        // 团队模式：继续使用首字母头像
                         $display_avatar = $default_avatar;
                     }
                 ?>
