@@ -1,31 +1,66 @@
 <?php
 session_start();
 require '../database.php'; // 修复路径
+require '../header.php';
 
 // 安全检查：建议加上管理员权限判断
 // if (!isset($_SESSION['Role']) || $_SESSION['Role'] !== 'admin') { header("Location: login.php"); exit; }
 
-// 处理发货逻辑
+// === 处理发货逻辑 (升级版) ===
 if (isset($_POST['update_status'])) {
     $id = $_POST['record_id'];
-    $status = "Delivered"; // 修复：去掉多余引号
+    $status = "Delivered";
     
-    $stmt = $pdo->prepare("UPDATE redeemrecord SET Status = ? WHERE RedeemRecord_ID = ?");
-    $stmt->execute([$status, $id]);
+    $proof_path = null;
+    $admin_note = $_POST['admin_note'] ?? null;
+
+    // 1. 处理图片上传
+    if (isset($_FILES['proof_photo']) && $_FILES['proof_photo']['error'] == 0) {
+        // 确保 uploads 文件夹存在
+        if (!is_dir('uploads')) mkdir('uploads');
+        
+        $file_name = time() . "_" . basename($_FILES["proof_photo"]["name"]);
+        $target_file = "uploads/" . $file_name;
+        
+        if (move_uploaded_file($_FILES["proof_photo"]["tmp_name"], $target_file)) {
+            $proof_path = "uploads/" . $file_name;
+        }
+    }
+
+    // 2. 更新数据库
+    // 我们用动态 SQL，因为 $proof_path 和 $admin_note 可能是空的
+    $sql = "UPDATE redeemrecord SET Status = ?";
+    $params = [$status];
+
+    if ($proof_path) {
+        $sql .= ", Proof_Photo = ?";
+        $params[] = $proof_path;
+    }
+    if ($admin_note) {
+        $sql .= ", Admin_Note = ?";
+        $params[] = $admin_note;
+    }
+
+    $sql .= " WHERE RedeemRecord_ID = ?";
+    $params[] = $id;
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
     
-    // 修复跳转：跳回当前页面
-    header("Location: Redemption_List.php"); 
-    exit;
+    // 如果是 AJAX 请求 (JS fetch)，不需要 header 跳转，直接退出即可
+    // JS 会处理刷新
+    exit; 
 }
 
 // 筛选逻辑 (新设计功能)
 $filter = $_GET['filter'] ?? 'all';
-$sql = "SELECT r.*, u.First_Name, u.Last_Name 
+$sql = "SELECT r.*, u.First_Name, u.Last_Name, u.Email, u.Phone_num
         FROM redeemrecord r
         JOIN user u ON r.Redeem_By = u.User_ID ";
 
 if ($filter == 'pending') {
-    $sql .= "WHERE r.Status != 'Delivered' "; // 注意：如果数据库存的是带引号的 'Delivered'，这里要小心
+    // 注意：Delivered 前后加了单引号
+    $sql .= "WHERE r.Status != 'Delivered' "; 
 } elseif ($filter == 'delivered') {
     $sql .= "WHERE r.Status = 'Delivered' ";
 }
@@ -42,6 +77,7 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <title>Admin - Redemption Manager</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-gray-100 font-sans">
@@ -52,9 +88,13 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <div>
             <h1 class="text-3xl font-bold text-gray-900">📦 Redemption Management</h1>
             <p class="text-gray-500 mt-1">Manage user reward requests and shipping status.</p>
+            <a href="export_data.php" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow flex items-center gap-2">
+    <i class="fa-solid fa-download"></i> Export CSV
+</a>
         </div>
         
         <div class="flex gap-2 mt-4 md:mt-0">
+            <input type="text" id="searchInput" placeholder="Search user name..." class="px-4 py-2 border rounded-lg text-sm w-64">
             <a href="?filter=all" class="px-4 py-2 rounded-lg text-sm font-bold <?php echo $filter=='all' ? 'bg-gray-800 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'; ?>">All</a>
             <a href="?filter=pending" class="px-4 py-2 rounded-lg text-sm font-bold <?php echo $filter=='pending' ? 'bg-yellow-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'; ?>">Pending</a>
             <a href="?filter=delivered" class="px-4 py-2 rounded-lg text-sm font-bold <?php echo $filter=='delivered' ? 'bg-green-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'; ?>">Delivered</a>
@@ -79,7 +119,6 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <?php endif; ?>
 
                 <?php foreach ($rows as $row): ?>
-                    <?php $clean_status = trim($row['Status'], "'"); // 清理引号 ?>
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="p-4 text-gray-400 text-sm">#<?php echo $row['RedeemRecord_ID']; ?></td>
                         
@@ -104,8 +143,8 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <?php echo date("M d, Y", strtotime($row['Redeem_Date'])); ?>
                         </td>
 
-                        <td class="p-4">
-                            <?php if ($clean_status == 'Delivered'): ?>
+                       <td class="p-4">
+                            <?php if ($row['Status'] == 'Delivered'): ?>
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                     <span class="w-1.5 h-1.5 bg-green-400 rounded-full mr-1.5"></span> Delivered
                                 </span>
@@ -116,16 +155,25 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <?php endif; ?>
                         </td>
 
-                        <td class="p-4 text-right">
-                            <?php if ($clean_status != 'Delivered'): ?>
-                                <form method="POST">
-                                    <input type="hidden" name="record_id" value="<?php echo $row['RedeemRecord_ID']; ?>">
-                                    <button type="submit" name="update_status" class="bg-gray-900 hover:bg-black text-white text-xs px-3 py-2 rounded-md font-medium shadow-sm transition">
-                                        Mark as Sent
-                                    </button>
-                                </form>
+                        <td class="p-4 text-right flex justify-end gap-2">
+                            
+                            <button type="button" 
+                                    onclick="showUserDetails('<?= htmlspecialchars($row['First_Name'].' '.$row['Last_Name']) ?>', '<?= htmlspecialchars($row['Email']) ?>', '<?= $row['Redeem_By'] ?>')"
+                                    class="text-gray-500 hover:text-blue-600 bg-gray-100 hover:bg-blue-50 p-2 rounded-lg transition"
+                                    title="View User Details">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+
+                            <?php if ($row['Status'] != 'Delivered'): ?>
+                                <button type="button" 
+                                        onclick="fulfillOrder(<?= $row['RedeemRecord_ID'] ?>, '<?= htmlspecialchars($row['Reward_Name'], ENT_QUOTES) ?>')"
+                                        class="bg-gray-900 hover:bg-black text-white text-xs px-3 py-2 rounded-md font-medium shadow-sm transition flex items-center gap-1">
+                                    <span>Fulfill</span>
+                                </button>
                             <?php else: ?>
-                                <span class="text-gray-300 text-sm"><i class="fa-solid fa-check"></i> Done</span>
+                                <span class="text-green-600 text-sm font-bold border border-green-200 bg-green-50 px-2 py-1 rounded-md">
+                                    <i class="fa-solid fa-check"></i> Done
+                                </span>
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -134,5 +182,6 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </table>
     </div>
 </div>
+<script src="Redemption_List.js"></script>
 </body>
 </html>

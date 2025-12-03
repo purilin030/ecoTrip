@@ -101,6 +101,17 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <span class="font-medium text-gray-700"> <?php echo $row['Redeem_Quantity']; ?></span>
                                 </div>
 
+                                <?php if ($row['Proof_Photo']): ?>
+    <button onclick="showProof('<?= $row['Proof_Photo'] ?>')" class="...">
+        <i class="fa-solid fa-image"></i> View Photo
+    </button>
+<?php endif; ?>
+
+<?php if ($row['Admin_Note']): ?>
+    <div class="bg-gray-50 p-2 text-sm text-gray-600">
+        Note: <?= htmlspecialchars($row['Admin_Note']) ?>
+    </div>
+<?php endif; ?>
                             </div>
                         </div>
                     </div>

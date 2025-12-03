@@ -1,6 +1,7 @@
 <?php
 session_start();
 require '../database.php';
+require '../header.php';
 
 // 1. 处理添加新商品
 if (isset($_POST['add_reward'])) {
@@ -34,12 +35,19 @@ $rewards = $pdo->query("SELECT * FROM reward")->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <title>Admin - Inventory</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gray-100 p-8 font-sans">
     <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
         
         <div class="md:col-span-1">
             <div class="bg-white p-6 rounded-lg shadow">
+                <div class="md:col-span-3 bg-white p-6 rounded-lg shadow mb-8">
+    <h3 class="font-bold text-gray-700 mb-4">Stock Overview</h3>
+    <div class="h-64">
+        <canvas id="stockChart"></canvas>
+    </div>
+</div>
                 <h2 class="text-xl font-bold mb-4 text-gray-800">Add New Reward</h2>
                 <form method="POST" class="space-y-4">
                     <div>
@@ -106,3 +114,28 @@ $rewards = $pdo->query("SELECT * FROM reward")->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </body>
 </html>
+<script>
+const ctx = document.getElementById('stockChart');
+
+// PHP 构建数据数组
+const labels = <?php echo json_encode(array_column($rewards, 'Reward_name')); ?>;
+const dataPoints = <?php echo json_encode(array_column($rewards, 'Stock')); ?>;
+
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Current Stock Level',
+            data: dataPoints,
+            backgroundColor: dataPoints.map(stock => stock < 10 ? '#ef4444' : '#10b981'), // 少于10变红色
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true } }
+    }
+});
+</script>
