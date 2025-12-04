@@ -185,6 +185,7 @@ $city_result = $con->query($city_sql);
     </footer>
 
     <script src="../js/view_challenge.js"></script>
+    <?php include $_SERVER['DOCUMENT_ROOT'] . '/ecotrip/background.php'; ?>
 </body>
 
 </html>
