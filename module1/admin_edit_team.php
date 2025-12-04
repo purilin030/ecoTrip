@@ -217,6 +217,7 @@ include '../header.php';
         <p class="text-center text-sm text-gray-400">&copy; 2025 ecoTrip Inc.</p>
     </div>
 </footer>
+<?php include $_SERVER['DOCUMENT_ROOT'] . '/ecotrip/background.php'; ?>
 </body>
 
 </html>

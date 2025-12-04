@@ -181,6 +181,7 @@ $main_image = !empty($challenge['photo_upload']) ? "uploads/" . $challenge['phot
     </div>
 
     <script src="../js/challenge_detail.js"></script>
+    <?php include $_SERVER['DOCUMENT_ROOT'] . '/ecotrip/background.php'; ?>
 </body>
 
 </html>
