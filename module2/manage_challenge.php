@@ -95,12 +95,12 @@ require '../header.php';
                 <p class="text-sm text-gray-500 mt-1">Create, edit, or archive system challenges.</p>
             </div>
             <div class="flex gap-3">
-                <a href="import_challenge.php" class="px-4 py-2 rounded-lg border border-gray-300 ...">
+                <a href="import_challenge.php" class="bg-white px-4 py-2 rounded-lg border border-gray-300 ...">
                     <i class="fa-solid fa-file-import"></i> Import CSV
                 </a>
 
                 <!-- Export Button -->
-                <a href="csv_handler.php?action=export" class="px-4 py-2 rounded-lg border border-gray-300 ...">
+                <a href="csv_handler.php?action=export" class="bg-white px-4 py-2 rounded-lg border border-gray-300 ...">
                     <i class="fa-solid fa-file-export"></i> Export CSV
                 </a>
                 <a href="create_challenge.php"
@@ -331,6 +331,7 @@ require '../header.php';
     <script src="../js/delete_challenge.js"></script>
     <!-- ADDED: Smart Clone Script -->
     <script src="../js/smart_clone.js"></script>
+    <?php include $_SERVER['DOCUMENT_ROOT'] . '/ecotrip/background.php'; ?>
 </body>
 
 </html>
