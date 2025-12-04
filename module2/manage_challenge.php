@@ -16,7 +16,28 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     $stmt->close();
 }
 
-// Fetch all challenges from database with category and city information
+// --- PAGINATION LOGIC START ---
+$results_per_page = 10; // Set limit to 10 challenges per page
+
+// Determine which page number visitor is currently on
+if (!isset($_GET['page'])) {
+    $page = 1;
+} else {
+    $page = $_GET['page'];
+}
+
+// Determine the sql LIMIT starting number for the results on the displaying page
+$this_page_first_result = ($page - 1) * $results_per_page;
+// --- PAGINATION LOGIC END ---
+
+// Count total challenges (Moved up to calculate total pages before main query)
+$count_result = $con->query("SELECT COUNT(*) as total FROM challenge");
+$total_challenges = $count_result->fetch_assoc()['total'];
+
+// Determine number of total pages available
+$number_of_pages = ceil($total_challenges / $results_per_page);
+
+// Fetch challenges with LIMIT for pagination
 $sql = "SELECT c.Challenge_ID, 
         c.Category_ID, 
         c.City_ID, 
@@ -36,13 +57,10 @@ $sql = "SELECT c.Challenge_ID,
         FROM challenge c
         LEFT JOIN category cat ON c.Category_ID = cat.CategoryID
         LEFT JOIN city city ON c.City_ID = city.CityID
-        ORDER BY c.Challenge_ID DESC";
+        ORDER BY c.Challenge_ID DESC
+        LIMIT " . $this_page_first_result . ',' .  $results_per_page; // Added LIMIT clause
 
 $result = $con->query($sql);
-
-// Count total challenges
-$count_result = $con->query("SELECT COUNT(*) as total FROM challenge");
-$total_challenges = $count_result->fetch_assoc()['total'];
 
 // Fetch categories for filter
 $cat_sql = "SELECT DISTINCT CategoryName FROM category ORDER BY CategoryName";
@@ -99,7 +117,6 @@ require '../header.php';
                     <i class="fa-solid fa-file-import"></i> Import CSV
                 </a>
 
-                <!-- Export Button -->
                 <a href="csv_handler.php?action=export" class="bg-white px-4 py-2 rounded-lg border border-gray-300 ...">
                     <i class="fa-solid fa-file-export"></i> Export CSV
                 </a>
@@ -110,7 +127,6 @@ require '../header.php';
             </div>
         </div>
 
-        <!-- Filter Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
             <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <div class="relative">
@@ -234,16 +250,13 @@ require '../header.php';
                                     data-status="<?php echo htmlspecialchars($status); ?>"
                                     data-difficulty="<?php echo htmlspecialchars($row['Difficulty']); ?>">
 
-                                    <!-- MODIFIED ID COLUMN -->
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
                                         <div class="flex items-center gap-3">
-                                            <!-- Smart Clone Button on the Left -->
                                             <button onclick="initiateSmartClone(<?php echo $row['Challenge_ID']; ?>)"
                                                 class="text-blue-500 hover:text-blue-700 hover:bg-blue-50 p-1 rounded transition-colors"
                                                 title="Smart Clone (Next Month)">
                                                 <i class="fa-regular fa-copy"></i>
                                             </button>
-                                            <!-- The ID -->
                                             <span><?php echo htmlspecialchars($row['Challenge_ID']); ?></span>
                                         </div>
                                     </td>
@@ -303,7 +316,7 @@ require '../header.php';
                             <tr>
                                 <td colspan="9" class="px-6 py-8 text-center text-gray-500">
                                     <i class="fa-solid fa-inbox text-4xl text-gray-300 mb-2"></i>
-                                    <p class="text-sm">No challenges found. Create your first challenge!</p>
+                                    <p class="text-sm">No challenges found.</p>
                                 </td>
                             </tr>
                             <?php
@@ -313,27 +326,73 @@ require '../header.php';
                 </table>
             </div>
 
-            <div class="bg-gray-50 px-6 py-3 border-t border-gray-200 flex items-center justify-between">
-                <div class="text-xs text-gray-500" id="entryCount">
-                    Showing <?php echo $result->num_rows; ?> of <?php echo $total_challenges; ?> entries
+            <div class="bg-white px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4 rounded-b-xl">
+                
+                <div class="text-sm text-gray-700 font-medium" id="entryCount">
+                    Showing 
+                    <span class="font-bold text-gray-900">
+                    <?php 
+                        $start_display = ($total_challenges > 0) ? $this_page_first_result + 1 : 0;
+                        $end_display = min(($this_page_first_result + $results_per_page), $total_challenges);
+                        echo $start_display . ' - ' . $end_display; 
+                    ?>
+                    </span>
+                    of 
+                    <span class="font-bold text-gray-900"><?php echo $total_challenges; ?></span> 
+                    entries
                 </div>
-                <div class="flex gap-1">
-                    <button
-                        class="px-2 py-1 border border-gray-300 rounded bg-white text-gray-500 text-xs hover:bg-gray-50">Previous</button>
-                    <button
-                        class="px-2 py-1 border border-gray-300 rounded bg-white text-gray-500 text-xs hover:bg-gray-50">Next</button>
+
+                <div class="flex gap-2 items-center">
+                    <?php 
+                    // Common styling for all buttons (Increased padding: px-4 py-2, Larger Text: text-sm)
+                    $btn_base = "relative inline-flex items-center px-4 py-2 text-sm font-medium border rounded-md transition-all duration-200 focus:z-20 focus:outline-offset-0 shadow-sm";
+                    $btn_inactive = "text-gray-700 bg-white border-gray-300 hover:bg-gray-50 hover:text-brand-600";
+                    $btn_active = "z-10 bg-brand-600 text-white border-brand-600 hover:bg-brand-700 shadow-md transform scale-105";
+
+                    // Previous Button
+                    if($page > 1){
+                        echo '<a href="manage_challenge.php?page='.($page-1).'" class="'.$btn_base.' '.$btn_inactive.'">
+                                <i class="fa-solid fa-chevron-left mr-2 text-xs"></i> Previous
+                              </a>';
+                    } else {
+                        // Optional: Disabled state if you want to show it but unclickable
+                        echo '<span class="'.$btn_base.' text-gray-300 bg-gray-50 border-gray-200 cursor-not-allowed">
+                                <i class="fa-solid fa-chevron-left mr-2 text-xs"></i> Previous
+                              </span>';
+                    }
+
+                    // Page Numbers
+                    for ($page_num = 1; $page_num <= $number_of_pages; $page_num++) {
+                        // Apply active or inactive style
+                        $style = ($page_num == $page) ? $btn_active : $btn_inactive;
+                        
+                        echo '<a href="manage_challenge.php?page='.$page_num.'" class="'.$btn_base.' '.$style.'">
+                                '.$page_num.'
+                              </a>';
+                    }
+
+                    // Next Button
+                    if($page < $number_of_pages){
+                        echo '<a href="manage_challenge.php?page='.($page+1).'" class="'.$btn_base.' '.$btn_inactive.'">
+                                Next <i class="fa-solid fa-chevron-right ml-2 text-xs"></i>
+                              </a>';
+                    } else {
+                         echo '<span class="'.$btn_base.' text-gray-300 bg-gray-50 border-gray-200 cursor-not-allowed">
+                                Next <i class="fa-solid fa-chevron-right ml-2 text-xs"></i>
+                              </span>';
+                    }
+                    ?>
                 </div>
+            </div>
             </div>
         </div>
     </main>
 
     <script src="../js/manage_challenge.js"></script>
     <script src="../js/delete_challenge.js"></script>
-    <!-- ADDED: Smart Clone Script -->
     <script src="../js/smart_clone.js"></script>
     <?php include $_SERVER['DOCUMENT_ROOT'] . '/ecotrip/background.php'; ?>
 </body>
-
 </html>
 <?php
 $con->close();
