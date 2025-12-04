@@ -42,8 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $team_code = strtoupper(substr(md5(time() . rand()), 0, 6));
 
     // 6. 创建队伍 (注意：Total_members 初始设为 1)
-    $insert_sql = "INSERT INTO team (Team_name, Team_code, Owner_ID, Total_members, Team_points) 
-                   VALUES ('$safe_name', '$team_code', '$owner_id', 1, 0)";
+    $insert_sql = "INSERT INTO team (Team_name, Team_code, Owner_ID, Total_members) 
+                   VALUES ('$safe_name', '$team_code', '$owner_id', 1)";
     
     if (mysqli_query($con, $insert_sql)) {
         
