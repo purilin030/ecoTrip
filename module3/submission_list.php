@@ -44,8 +44,7 @@ if (file_exists($path_to_header)) {
 
 // 1. 检查是否登录
 if (!isset($_SESSION['user_id'])) {
-    // 如果没有 user_id，说明没登录，跳转回首页或登录页
-    echo "<script>window.location.href = 'index.php';</script>";
+    header("Location: index.php");
     exit();
 }
 

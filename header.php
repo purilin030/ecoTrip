@@ -10,7 +10,7 @@ $public_pages = ['index.php', 'signup.php'];
 
 if (!in_array($current_page, $public_pages)) {
     if (!isset($_SESSION['Firstname'])) {
-        header("Location: index.php");
+        header("Location: /ecotrip/module1/index.php");
         exit();
     }
 }
