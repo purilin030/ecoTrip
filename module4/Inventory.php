@@ -1,7 +1,7 @@
 <?php
 session_start();
 require '../database.php';
-
+require '../background.php';
 // --- 1. 后端处理逻辑 (放在 Header 之前) ---
 
 // A. 添加新商品
@@ -288,5 +288,8 @@ require '../header.php';
     const dataPoints = <?php echo json_encode(array_column($rewards, 'Stock')); ?>;
     new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Stock', data: dataPoints, backgroundColor: '#10b981', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } });
 </script>
+<?php
+include '../footer.php';
+?>
 </body>
 </html>

@@ -1,10 +1,7 @@
 <?php
-// 1. 引入数据库连接
 require '../database.php'; 
-
-// 2. 引入头部
-include '../header.php'; 
-
+include '../header.php';
+include '../background.php'; 
 // --- 逻辑处理区域 ---
 
 // 获取参数
@@ -132,7 +129,7 @@ $inactiveTab = "flex-1 py-4 text-center text-sm font-medium text-gray-500 hover:
     </div>
     <?php endif; ?>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
         
         <div class="flex border-b border-gray-200">
             <a href="?mode=individual&period=<?= $period ?>" class="<?= $mode === 'individual' ? $activeTab : $inactiveTab ?>">Individual</a>
@@ -188,5 +185,8 @@ $inactiveTab = "flex-1 py-4 text-center text-sm font-medium text-gray-500 hover:
         </div>
     </div>
 </main>
+<?php
+include '../footer.php';
+?>
 </body>
 </html>

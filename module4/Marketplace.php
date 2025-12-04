@@ -6,6 +6,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // 2. 引入数据库连接 (提供 $pdo)
 require '../database.php';
+include '../background.php'; 
 
 // 3. 设置页面标题 (header.php 会用到这个变量)
 $page_title = "Rewards Marketplace";
@@ -149,16 +150,9 @@ include '../header.php';
     </div>  
 
 </main>
-
-<footer class="bg-white border-t border-gray-200 mt-auto">
-    <div class="w-full py-8 px-8">
-        <p class="text-center text-sm text-gray-400">
-            &copy; 2025 ecoTrip Inc. All rights reserved. Designed for a greener tomorrow.
-        </p>
-    </div>
-</footer>
-
 <script src="marketplace.js"></script>
-
+<?php
+include '../footer.php';
+?>
 </body>
 </html>

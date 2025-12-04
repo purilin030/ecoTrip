@@ -2,6 +2,7 @@
 session_start();
 require '../database.php';
 require '../header.php';
+require '../background.php';
 
 // 1. 检查登录
 if(!isset($_SESSION['user_id'])){
@@ -141,5 +142,8 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
             });
         }
     </script>
+<?php
+include '../footer.php';
+?>
 </body>
 </html>

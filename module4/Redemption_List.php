@@ -1,7 +1,8 @@
 <?php
 session_start();
-require '../database.php'; // 修复路径
+require '../database.php';
 require '../header.php';
+require '../background.php';
 
 // 安全检查：建议加上管理员权限判断
 // if (!isset($_SESSION['Role']) || $_SESSION['Role'] !== 'admin') { header("Location: login.php"); exit; }
@@ -184,5 +185,8 @@ $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 <script src="Redemption_List.js"></script>
+<?php
+include '../footer.php';
+?>
 </body>
 </html>
