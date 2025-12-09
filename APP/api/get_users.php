@@ -10,7 +10,7 @@ if ($conn->connect_error) {
 }
 
 // 查出所有用户的关键信息
-$sql = "SELECT User_ID, First_Name, Last_Name, Email, Point, Team_ID FROM user";
+$sql = "SELECT User_ID, First_Name, Last_Name,Caption,User_DOB,Phone_num, Email, Point, Team_ID,RedeemPoint,Role, FROM user WHERE Account_Status = 'active' AND Email IS NOT NULL AND Role != 1";
 $result = $conn->query($sql);
 
 $users = array();

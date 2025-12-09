@@ -63,19 +63,20 @@
                     // 这样当 App 登录时，如果发现 Google 邮箱和这个一样，就读取数据。
                     
                     // 注意：这里我们无法直接获得 Google 的 UID，所以我们先存个以 Email 命名的文档作为“占位符”
-                    // 稍后在 App 端我们会修改逻辑去认领这个数据。
-                    
-                    // 或者更简单的：我们创建一个叫 'legacy_import' 的集合
-                    
-                    const userRef = doc(db, "users_legacy", user.Email); 
+                    // 稍后在 App 端我们会修改逻辑去认领这个数据。    
+                    const userRef = doc(db, "users", user.Email); 
                     
                     await setDoc(userRef, {
                         originalId: user.User_ID,
                         name: user.First_Name + " " + user.Last_Name,
+                        caption: user.Caption,
+                        dob: user.User_DOB,
+                        phone: user.Phone_num,
                         email: user.Email,
                         points: parseInt(user.Point),
-                        teamId: user.Team_ID,
-                        migrated: false // 标记未被认领
+                        redeemPoints: parseInt(user.RedeemPoint),
+                        role: user.Role,
+                        teamId: user.Team_ID
                     });
 
                     log.innerHTML += `<br>➡️ 已迁移: ${user.Email} (${user.Point}分)`;

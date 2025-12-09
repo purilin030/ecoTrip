@@ -46,6 +46,31 @@ include '../header.php';
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Rewards Marketplace</h1>
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-8 flex flex-col md:flex-row gap-4 items-center">
+    
+    <div class="relative flex-grow w-full">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+        <input type="text" id="searchReward" placeholder="Search rewards..." 
+               class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 outline-none text-sm">
+    </div>
+
+    <div class="w-full md:w-auto">
+        <select id="typeFilter" class="w-full md:w-40 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-brand-500 outline-none cursor-pointer">
+            <option value="all">All Types</option>
+            <option value="Physical">📦 Physical</option>
+            <option value="Virtual">🎟️ Virtual</option>
+        </select>
+    </div>
+
+    <div class="w-full md:w-auto">
+        <select id="priceFilter" class="w-full md:w-48 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-brand-500 outline-none cursor-pointer">
+            <option value="all">Any Points</option>
+            <option value="affordable">Affordable (< 500)</option>
+            <option value="medium">Medium (500 - 1000)</option>
+            <option value="premium">Premium (> 1000)</option>
+        </select>
+    </div>
+</div>
             <p class="mt-1 text-gray-500">Redeem your hard-earned points for eco-friendly goodies.</p>
         </div>
         
@@ -103,16 +128,26 @@ include '../header.php';
                     $btnText = "Redeem Now";
                 }
             ?>
-
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col group hover:shadow-md transition duration-300">
-                <div class="h-48 overflow-hidden bg-gradient-to-r from-green-500 to-teal-600 text-white relative">
-                    <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=500&q=80" 
-                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                    
-                    <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold text-gray-900 shadow-sm">
-                        <?php echo $reward['Points_Required']; ?> pts
-                    </div>
-                </div>
+    <div class="reward-card bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col group hover:shadow-md transition duration-300"
+         data-name="<?php echo strtolower(htmlspecialchars($reward['Reward_name'])); ?>"
+         data-type="<?php echo $reward['Type']; ?>"
+         data-points="<?php echo $reward['Points_Required']; ?>">
+            <div class="h-48 w-full bg-gray-100 overflow-hidden relative">
+    <?php 
+        // 1. 获取图片路径
+        $imgSrc = htmlspecialchars($reward['Reward_Photo']);
+        
+        // 2. 如果数据库里是空的，使用默认图
+        if (empty($imgSrc)) {
+            $imgSrc = "https://placehold.co/600x400/e2e8f0/94a3b8?text=No+Image";
+        }
+    ?>
+    
+    <img src="<?php echo $imgSrc; ?>" 
+         alt="<?php echo htmlspecialchars($reward['Reward_name']); ?>" 
+         class="w-full h-full object-cover transform group-hover:scale-105 transition duration-300"
+         onerror="this.onerror=null; this.src='https://placehold.co/600x400/e2e8f0/94a3b8?text=Image+Error';">
+</div>
 
                 <div class="p-5 flex-1 flex flex-col">
                     <div class="mb-2">
