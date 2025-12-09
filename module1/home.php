@@ -63,9 +63,6 @@ include '../header.php';
                     <a href="../module2/view_challenge.php" class="px-8 py-3 bg-green-600 hover:bg-green-500 text-white font-semibold rounded-full transition-all shadow-lg transform hover:scale-105">
                         Start Challenge
                     </a>
-                    <a href="#learn-more" class="px-8 py-3 bg-transparent border border-white hover:bg-white hover:text-green-900 text-white font-semibold rounded-full transition-all">
-                        Learn More
-                    </a>
                 </div>
 
             </div>
