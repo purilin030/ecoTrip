@@ -38,7 +38,7 @@ if (session_status() === PHP_SESSION_NONE) {
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <a href="index.php" class="flex-shrink-0 flex items-center gap-2">
+                    <a href="/ecotrip/module1/home.php" class="flex-shrink-0 flex items-center gap-2">
                         <i class="fa-solid fa-leaf text-brand-600 text-2xl"></i>
                         <span class="font-bold text-xl tracking-tight text-gray-900">ecoTrip</span>
                     </a>

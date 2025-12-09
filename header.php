@@ -6,7 +6,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // 2. 只有在非公开页面才强制检查登录
 $current_page = basename($_SERVER['PHP_SELF']);
-$public_pages = ['index.php', 'signup.php'];
+$public_pages = ['index.php', 'signup.php', 'home.php'];
 
 if (!in_array($current_page, $public_pages)) {
     if (!isset($_SESSION['Firstname'])) {

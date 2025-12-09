@@ -3,10 +3,10 @@ session_start();
 require 'database.php'; 
 
 //Seciurity check
-if (!isset($_SESSION['user_id'])) {
-    header("Location: index.php");
-    exit();
-}
+// if (!isset($_SESSION['user_id'])) {
+//     header("Location: index.php");
+//     exit();
+// }
 
 $page_title = "ecoTrip - Home";
 $extra_css = '<link rel="stylesheet" href="/../login.css">';
