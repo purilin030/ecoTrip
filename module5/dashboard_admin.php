@@ -110,7 +110,7 @@ while($row = mysqli_fetch_assoc($res_pop)) {
 }
 
 // 4. 库存预警 (Low Stock)
-$sql_low_stock = "SELECT Reward_name, Stock, Reward_Photo FROM reward WHERE Stock < 10 AND Status = 'Active' ORDER BY Stock ASC LIMIT 5";
+$sql_low_stock = "SELECT Reward_name, Stock, Reward_Photo FROM reward WHERE Stock < 50 AND Status = 'Active' ORDER BY Stock ASC LIMIT 5";
 $res_low_stock = mysqli_query($con, $sql_low_stock);
 $low_stock_items = [];
 while($row = mysqli_fetch_assoc($res_low_stock)) {
