@@ -111,7 +111,7 @@ $page_title = "ecoTrip - Dashboard";
 include '../header.php';
 ?>
 
-<link rel="stylesheet" href="dashboard_admin.css">
+<link rel="stylesheet" href="../css1/dashboard_admin.css">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -341,7 +341,7 @@ include '../header.php';
     };
 </script>
 
-<script src="dashboard_admin.js"></script>
+<script src="../js/dashboard_admin.js"></script>
 
 </body>
 </html>
