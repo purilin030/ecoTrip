@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主機： 127.0.0.1
--- 產生時間： 2025 年 12 月 11 日 02:47
+-- 產生時間： 2025 年 12 月 11 日 02:50
 -- 伺服器版本： 10.4.32-MariaDB
 -- PHP 版本： 8.2.12
 
@@ -138,6 +138,27 @@ CREATE TABLE `donation_campaign` (
 INSERT INTO `donation_campaign` (`Campaign_ID`, `Title`, `Description`, `Target_Points`, `Current_Points`, `Image`, `Status`, `Created_At`) VALUES
 (1, 'Build a Stray Dog Shelter', 'Help us build a warm home for 50 stray dogs in Ipoh.', 50000, 991, 'uploads/DogHouse.jpeg', 'Active', '2025-12-11 09:12:05'),
 (2, 'Solar Street Lights for Village A', 'Install 10 solar-powered lights for safer roads at night.', 30000, 0, 'uploads/solarLight.jpg', 'Active', '2025-12-11 09:12:05');
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `donation_record`
+--
+
+CREATE TABLE `donation_record` (
+  `Record_ID` int(11) NOT NULL,
+  `Campaign_ID` int(11) NOT NULL,
+  `User_ID` int(11) NOT NULL,
+  `Amount` int(11) NOT NULL COMMENT '捐赠分数',
+  `Donation_Date` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- 傾印資料表的資料 `donation_record`
+--
+
+INSERT INTO `donation_record` (`Record_ID`, `Campaign_ID`, `User_ID`, `Amount`, `Donation_Date`) VALUES
+(1, 1, 27, 991, '2025-12-11 09:34:48');
 
 -- --------------------------------------------------------
 
@@ -395,6 +416,14 @@ ALTER TABLE `donation_campaign`
   ADD PRIMARY KEY (`Campaign_ID`);
 
 --
+-- 資料表索引 `donation_record`
+--
+ALTER TABLE `donation_record`
+  ADD PRIMARY KEY (`Record_ID`),
+  ADD KEY `Campaign_ID` (`Campaign_ID`),
+  ADD KEY `User_ID` (`User_ID`);
+
+--
 -- 資料表索引 `moderation`
 --
 ALTER TABLE `moderation`
@@ -477,6 +506,12 @@ ALTER TABLE `donation_campaign`
   MODIFY `Campaign_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
+-- 使用資料表自動遞增(AUTO_INCREMENT) `donation_record`
+--
+ALTER TABLE `donation_record`
+  MODIFY `Record_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- 使用資料表自動遞增(AUTO_INCREMENT) `moderation`
 --
 ALTER TABLE `moderation`
@@ -529,6 +564,13 @@ ALTER TABLE `challenge`
   ADD CONSTRAINT `challenge_ibfk_1` FOREIGN KEY (`City_ID`) REFERENCES `city` (`CityID`) ON UPDATE CASCADE,
   ADD CONSTRAINT `challenge_ibfk_2` FOREIGN KEY (`Category_ID`) REFERENCES `category` (`CategoryID`) ON UPDATE CASCADE,
   ADD CONSTRAINT `challenge_ibfk_3` FOREIGN KEY (`Created_by`) REFERENCES `user` (`User_ID`) ON UPDATE CASCADE;
+
+--
+-- 資料表的限制式 `donation_record`
+--
+ALTER TABLE `donation_record`
+  ADD CONSTRAINT `donation_record_ibfk_1` FOREIGN KEY (`Campaign_ID`) REFERENCES `donation_campaign` (`Campaign_ID`),
+  ADD CONSTRAINT `donation_record_ibfk_2` FOREIGN KEY (`User_ID`) REFERENCES `user` (`User_ID`);
 
 --
 -- 資料表的限制式 `moderation`
